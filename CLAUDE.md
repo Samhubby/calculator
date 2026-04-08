@@ -25,6 +25,7 @@ calculator/
 ├── manifest.json         ← PWA metadata
 ├── sw.js                 ← service worker (offline support)
 ├── CLAUDE.md             ← this file
+├── GUIDE.md              ← user guide (install + feature usage)
 └── docs/
     └── superpowers/
         └── specs/
@@ -103,6 +104,10 @@ npx playwright test
 npx playwright test --ui
 ```
 
+## User Guide
+
+Full usage guide (install on iPhone + all features): [GUIDE.md](GUIDE.md)
+
 ## Design Spec
 
 Full design document: [docs/superpowers/specs/2026-04-08-engineering-calculator-pwa-design.md](docs/superpowers/specs/2026-04-08-engineering-calculator-pwa-design.md)
@@ -118,3 +123,5 @@ Full design document: [docs/superpowers/specs/2026-04-08-engineering-calculator-
 | 2026-04-08 | Playwright E2E testing planned for post-implementation |
 | 2026-04-08 | All 14 tasks implemented — full app complete |
 | 2026-04-08 | Playwright E2E tests written and run — 16/16 passing |
+| 2026-04-08 | Fix iOS PWA install — absolute manifest paths for GitHub Pages subdirectory |
+| 2026-04-08 | Add GUIDE.md — full user guide for install and all features |
