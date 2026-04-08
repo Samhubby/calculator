@@ -606,7 +606,7 @@ function runSolverTests() {
   assert('secant x^3-x-2', r4.root, 1.5214);
   const pts = [[1,1],[2,8],[3,27]];
   const ri = newtonInterpolation(pts, 2.5);
-  assert('interp cubic at 2.5', ri.value, 15.625);
+  assert('interp cubic at 2.5', ri.value, 16); // quadratic through 3 points
   const trap = trapezoidalRule('x^2', 0, 1, 100);
   assert('trapezoidal x^2 0-1', trap.toFixed(4), 0.3333);
   const simp = simpsonsRule('x^2', 0, 1, 100);
