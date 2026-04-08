@@ -1,4 +1,4 @@
-const CACHE = 'calc-v1';
+const CACHE = 'calc-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './apple-touch-icon.png',
   'https://cdn.jsdelivr.net/npm/mathjs@13/lib/browser/math.js'
 ];
 
