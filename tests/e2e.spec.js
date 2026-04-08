@@ -203,28 +203,22 @@ test('derivative of x^3 at x=2 is 12', async ({ page }) => {
 
 // ── LLM CHAT ─────────────────────────────────────────────────────────────────
 
-test('long-press 0 opens chat sheet', async ({ page }) => {
-  const zeroBtn = page.locator('#btn-zero');
-  await zeroBtn.dispatchEvent('pointerdown');
-  await page.waitForTimeout(1600); // wait for 1.5s long-press
-  await zeroBtn.dispatchEvent('pointerup');
+test('double-tap 0 opens chat sheet', async ({ page }) => {
+  await page.locator('#btn-zero').dblclick();
+  await page.waitForTimeout(350);
   await expect(page.locator('#chat-sheet')).not.toHaveClass(/hidden/);
 });
 
 test('chat input pre-fills on first open', async ({ page }) => {
-  const zeroBtn = page.locator('#btn-zero');
-  await zeroBtn.dispatchEvent('pointerdown');
-  await page.waitForTimeout(1600);
-  await zeroBtn.dispatchEvent('pointerup');
+  await page.locator('#btn-zero').dblclick();
+  await page.waitForTimeout(350);
   const input = page.locator('#chat-input');
   await expect(input).toHaveValue("I'm solving a numerical methods problem: ");
 });
 
 test('chat close button dismisses sheet', async ({ page }) => {
-  const zeroBtn = page.locator('#btn-zero');
-  await zeroBtn.dispatchEvent('pointerdown');
-  await page.waitForTimeout(1600);
-  await zeroBtn.dispatchEvent('pointerup');
+  await page.locator('#btn-zero').dblclick();
+  await page.waitForTimeout(350);
   await page.click('#chat-close');
   await expect(page.locator('#chat-sheet')).toHaveClass(/hidden/);
 });

@@ -101,6 +101,7 @@ function updateDisplay() {
 }
 
 document.querySelectorAll('.btn').forEach(btn => {
+  if (btn.id === 'btn-zero') return; // handled separately with double-tap
   btn.addEventListener('click', () => handleBtn(btn));
 });
 
@@ -488,14 +489,24 @@ document.getElementById('chat-handle').addEventListener('touchend', e => {
   if (e.changedTouches[0].clientY - touchStartY > 60) closeChatSheet();
 });
 
-// Long-press 0 → open chat
-let longPressTimer = null;
+// Double-tap 0 → open chat
 const zeroBtn = document.getElementById('btn-zero');
-zeroBtn.addEventListener('pointerdown', () => {
-  longPressTimer = setTimeout(openChatSheet, 1500);
+let zeroLastTap = 0;
+let zeroTapTimer = null;
+
+// Remove zero from general click handler (re-wired below with double-tap logic)
+zeroBtn.addEventListener('click', () => {
+  const now = Date.now();
+  if (now - zeroLastTap < 300) {
+    clearTimeout(zeroTapTimer);
+    zeroLastTap = 0;
+    openChatSheet();
+  } else {
+    zeroLastTap = now;
+    zeroTapTimer = setTimeout(() => { handleBtn(zeroBtn); }, 280);
+  }
 });
-zeroBtn.addEventListener('pointerup',   () => clearTimeout(longPressTimer));
-zeroBtn.addEventListener('pointerleave',() => clearTimeout(longPressTimer));
+
 
 // Send message
 async function sendChat() {
@@ -512,11 +523,19 @@ async function sendChat() {
       contents: [{ role: 'user', parts: [{ text: msg }] }]
     };
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
     const data = await res.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
+    if (!res.ok) {
+      thinking.remove();
+      appendMsg('ai', 'API error: ' + (data?.error?.message || `HTTP ${res.status}`));
+      return;
+    }
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      || (data?.promptFeedback?.blockReason ? 'Blocked: ' + data.promptFeedback.blockReason : null)
+      || data?.error?.message
+      || 'No response.';
     thinking.remove();
     appendMsg('ai', reply);
   } catch(e) {
