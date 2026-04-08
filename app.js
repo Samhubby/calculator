@@ -595,3 +595,12 @@ if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
 }
 
 updateDisplay();
+
+// ===== SERVICE WORKER =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err =>
+      console.warn('SW registration failed:', err)
+    );
+  });
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+function makeIcon(size, filename) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = '#ff9f0a';
+  ctx.font = `bold ${size * 0.5}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('=', size/2, size/2);
+  const a = document.createElement('a');
+  a.href = c.toDataURL('image/png');
+  a.download = filename;
+  a.click();
+}
+makeIcon(192, 'icon-192.png');
+setTimeout(() => makeIcon(512, 'icon-512.png'), 500);
+</script>
+<p>Generating icons... check your downloads folder.</p>
+</body>
+</html>
