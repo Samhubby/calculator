@@ -459,8 +459,83 @@ function wireDrawerForms() {
   });
 }
 
-// closeChatSheet stub — replaced in Task 11
-function closeChatSheet() {}
+// ===== CHAT =====
+const chatSheet   = document.getElementById('chat-sheet');
+const chatInput   = document.getElementById('chat-input');
+const chatHistory = document.getElementById('chat-history');
+const SYSTEM_PROMPT = 'You are a numerical methods assistant. Give concise, step-by-step solutions suitable for an engineering exam. Use plain text, no markdown.';
+
+function openChatSheet() {
+  chatSheet.classList.remove('hidden');
+  backdrop.classList.remove('hidden');
+  if (!chatHistory.children.length) {
+    chatInput.value = 'I\'m solving a numerical methods problem: ';
+  }
+  setTimeout(() => chatInput.focus(), 300);
+}
+
+function closeChatSheet() {
+  chatSheet.classList.add('hidden');
+  backdrop.classList.add('hidden');
+}
+
+document.getElementById('chat-close').addEventListener('click', closeChatSheet);
+
+// Swipe-down to close
+let touchStartY = 0;
+document.getElementById('chat-handle').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; });
+document.getElementById('chat-handle').addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - touchStartY > 60) closeChatSheet();
+});
+
+// Long-press 0 → open chat
+let longPressTimer = null;
+const zeroBtn = document.getElementById('btn-zero');
+zeroBtn.addEventListener('pointerdown', () => {
+  longPressTimer = setTimeout(openChatSheet, 1500);
+});
+zeroBtn.addEventListener('pointerup',   () => clearTimeout(longPressTimer));
+zeroBtn.addEventListener('pointerleave',() => clearTimeout(longPressTimer));
+
+// Send message
+async function sendChat() {
+  const apiKey = localStorage.getItem('gemini_api_key');
+  if (!apiKey) { if (typeof showSettingsModal === 'function') showSettingsModal(); return; }
+  const msg = chatInput.value.trim();
+  if (!msg) return;
+  chatInput.value = '';
+  appendMsg('user', msg);
+  const thinking = appendMsg('ai', '...', 'thinking');
+  try {
+    const body = {
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: msg }] }]
+    };
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    const data = await res.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
+    thinking.remove();
+    appendMsg('ai', reply);
+  } catch(e) {
+    thinking.remove();
+    appendMsg('ai', 'Network error: ' + e.message);
+  }
+}
+
+function appendMsg(role, text, extraClass = '') {
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + role + (extraClass ? ' ' + extraClass : '');
+  el.textContent = text;
+  chatHistory.appendChild(el);
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+  return el;
+}
+
+document.getElementById('chat-send').addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
 
 // ===== CONSOLE TESTS (localhost only) =====
 function runCalcTests() {
