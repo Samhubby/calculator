@@ -228,9 +228,45 @@ function newtonPanel() {
       <div class="solver-result" id="nr-result">—</div>
     </div>`;
 }
-function interpPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function interpPanel() {
+  return `
+    <div class="solver-form">
+      <div>
+        <label>Data points — one per line as: x, y</label>
+        <textarea id="interp-data" rows="5" style="width:100%;background:var(--input-bg);border:1px solid var(--sheet-border);border-radius:8px;color:var(--text);font-size:13px;padding:8px;font-family:monospace;resize:vertical" placeholder="1, 1\n2, 8\n3, 27"></textarea>
+      </div>
+      <div><label>Query point x</label><input type="number" id="interp-x" placeholder="2.5" step="any"></div>
+      <button class="solver-btn" id="interp-solve">Interpolate</button>
+      <div class="solver-result" id="interp-result">—</div>
+    </div>`;
+}
 function integralPanel()  { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
 function derivPanel()     { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+
+function newtonInterpolation(points, queryX) {
+  const n = points.length;
+  const x = points.map(p => p[0]);
+  const d = points.map(p => p[1]);
+  const coeff = [d[0]];
+  let prev = [...d];
+  for (let j = 1; j < n; j++) {
+    const next = [];
+    for (let i = 0; i < n - j; i++) {
+      next.push((prev[i+1] - prev[i]) / (x[i+j] - x[i]));
+    }
+    coeff.push(next[0]);
+    prev = next;
+  }
+  let result = coeff[0];
+  let term = 1;
+  const steps = [`f[x₀] = ${coeff[0].toFixed(6)}`];
+  for (let i = 1; i < n; i++) {
+    term *= (queryX - x[i-1]);
+    result += coeff[i] * term;
+    steps.push(`f[x₀..x${i}] = ${coeff[i].toFixed(6)}`);
+  }
+  return { value: result, coefficients: coeff, steps };
+}
 
 function newtonRaphson(fStr, dfStr, x0, tol) {
   const f  = x => math.evaluate(fStr,  { x });
@@ -320,6 +356,23 @@ function wireDrawerForms() {
         `#${r.iter}  ${Object.values(r).slice(1).join('  ')}`
       ).join('\n');
       out.textContent = `Method: ${res.method}\nRoot ≈ ${res.root}\nIterations: ${res.iterations}\n\nLast 5 steps:\n${table}`;
+    } catch(e) { out.textContent = 'Error: ' + e.message; }
+  });
+
+  // Interpolation
+  document.getElementById('interp-solve')?.addEventListener('click', () => {
+    const raw = document.getElementById('interp-data').value.trim();
+    const qx  = parseFloat(document.getElementById('interp-x').value);
+    const out = document.getElementById('interp-result');
+    if (!raw || isNaN(qx)) { out.textContent = 'Enter data points and query x.'; return; }
+    try {
+      const points = raw.split('\n').map(line => {
+        const parts = line.split(',').map(Number);
+        if (parts.length < 2 || parts.some(isNaN)) throw new Error(`Invalid line: "${line}"`);
+        return parts;
+      });
+      const res = newtonInterpolation(points, qx);
+      out.textContent = `f(${qx}) ≈ ${res.value.toFixed(6)}\n\nDivided differences:\n${res.steps.join('\n')}`;
     } catch(e) { out.textContent = 'Error: ' + e.message; }
   });
 }
