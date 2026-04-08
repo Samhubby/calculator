@@ -253,7 +253,30 @@ function integralPanel() {
       <div class="solver-result" id="int-result">—</div>
     </div>`;
 }
-function derivPanel()     { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function derivPanel() {
+  return `
+    <div class="solver-form">
+      <div><label>f(x)</label><input type="text" id="drv-fx" placeholder="x^3 + 2*x"></div>
+      <div><label>Point x</label><input type="number" id="drv-x" placeholder="2" step="any"></div>
+      <button class="solver-btn" id="drv-solve">Differentiate</button>
+      <div class="solver-result" id="drv-result">—</div>
+    </div>`;
+}
+
+function numericalDerivative(fStr, x, h = 1e-5) {
+  const f = t => math.evaluate(fStr, { x: t });
+  return (f(x + h) - f(x - h)) / (2 * h);
+}
+
+function symbolicDerivative(fStr) {
+  try {
+    const node = math.parse(fStr);
+    const derived = math.derivative(node, 'x');
+    return derived.toString();
+  } catch(e) {
+    return null;
+  }
+}
 
 function trapezoidalRule(fStr, a, b, n) {
   const f = x => math.evaluate(fStr, { x });
@@ -417,6 +440,21 @@ function wireDrawerForms() {
       const trap = trapezoidalRule(fx, a, b, n);
       const simp = simpsonsRule(fx, a, b, n % 2 === 0 ? n : n + 1);
       out.textContent = `Trapezoidal (n=${n}):\n  ∫f dx ≈ ${trap.toFixed(8)}\n\nSimpson's (n=${n % 2 === 0 ? n : n+1}):\n  ∫f dx ≈ ${simp.toFixed(8)}`;
+    } catch(e) { out.textContent = 'Error: ' + e.message; }
+  });
+
+  // Derivative
+  document.getElementById('drv-solve')?.addEventListener('click', () => {
+    const fx = document.getElementById('drv-fx').value.trim();
+    const x  = parseFloat(document.getElementById('drv-x').value);
+    const out = document.getElementById('drv-result');
+    if (!fx || isNaN(x)) { out.textContent = 'Fill f(x) and x.'; return; }
+    try {
+      const numerical = numericalDerivative(fx, x);
+      const symbolic  = symbolicDerivative(fx);
+      let text = `Numerical f'(${x}) ≈ ${numerical.toFixed(8)}\n(central difference, h=1e-5)`;
+      if (symbolic) text += `\n\nSymbolic f'(x) = ${symbolic}\nf'(${x}) = ${math.evaluate(symbolic, { x }).toFixed(8)}`;
+      out.textContent = text;
     } catch(e) { out.textContent = 'Error: ' + e.message; }
   });
 }
