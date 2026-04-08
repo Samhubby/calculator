@@ -100,3 +100,71 @@ html, body {
 /* ===== LANDSCAPE TOOLBAR (hidden in portrait) ===== */
 #landscape-toolbar { display: none; }
 #sci-panel { display: none; }
+
+/* ===== LANDSCAPE ===== */
+@media (orientation: landscape) {
+  #app {
+    flex-direction: row;
+    max-width: 100%;
+    height: 100dvh;
+  }
+
+  #sci-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 6px;
+    width: 38%;
+    align-content: start;
+    overflow-y: auto;
+  }
+
+  #display-wrap {
+    position: absolute;
+    top: 0; left: 38%; right: 0;
+    height: 22%;
+    padding: 4px 16px 4px;
+  }
+
+  #display { font-size: clamp(32px, 5vw, 56px); }
+
+  #basic-grid {
+    position: absolute;
+    top: 22%; left: 38%; right: 0; bottom: 40px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .btn { font-size: clamp(14px, 3vw, 22px); }
+  .btn-zero { padding-left: 16px; }
+
+  #landscape-toolbar {
+    display: flex;
+    position: absolute;
+    bottom: 0; left: 38%; right: 0;
+    height: 38px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+    border-top: 1px solid #222;
+  }
+
+  #landscape-toolbar button {
+    background: none;
+    border: none;
+    color: var(--btn-fn);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  #landscape-toolbar button:active { background: #333; }
+
+  .btn-sci {
+    aspect-ratio: unset;
+    height: 44px;
+    border-radius: 8px;
+    font-size: clamp(11px, 2.5vw, 16px);
+    background: var(--btn-sci);
+  }
+}

@@ -117,8 +117,42 @@ function handleBtn(btn) {
   updateDisplay();
 }
 
-// handleSci stub — filled in Task 4
-function handleSci(fn) {}
+function handleSci(fn) {
+  let v = parseFloat(calc.display);
+  let result;
+  const DEG = Math.PI / 180;
+  switch (fn) {
+    case 'sin':   result = Math.sin(v * DEG); break;
+    case 'cos':   result = Math.cos(v * DEG); break;
+    case 'tan':   result = Math.tan(v * DEG); break;
+    case 'asin':  result = Math.asin(v) / DEG; break;
+    case 'acos':  result = Math.acos(v) / DEG; break;
+    case 'atan':  result = Math.atan(v) / DEG; break;
+    case 'log':   result = Math.log10(v); break;
+    case 'ln':    result = Math.log(v); break;
+    case 'sqrt':  result = Math.sqrt(v); break;
+    case 'sq':    result = v * v; break;
+    case 'pow':
+      calc.inputOperator('**');
+      return;
+    case 'pi':
+      calc.current = String(Math.PI);
+      calc.shouldReplace = true;
+      updateDisplay(); return;
+    case 'e':
+      calc.current = String(Math.E);
+      calc.shouldReplace = true;
+      updateDisplay(); return;
+    case 'open':
+    case 'close':
+      return;
+    default: return;
+  }
+  if (!isFinite(result)) result = 'Error';
+  calc.current = calc._fmt(result);
+  calc.shouldReplace = true;
+  updateDisplay();
+}
 
 // Drawer/chat stubs — filled in Tasks 5 and 11
 function closeChatSheet() {}
