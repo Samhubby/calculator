@@ -198,12 +198,64 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // Panel HTML stubs — filled in Tasks 6-10
-function bisectionPanel() { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function bisectionPanel() {
+  return `
+    <div class="solver-form" id="bisection-form">
+      <div>
+        <label>f(x) — e.g. x^3 - x - 2</label>
+        <input type="text" id="bis-fx" placeholder="x^3 - x - 2">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label>a</label><input type="number" id="bis-a" placeholder="1"></div>
+        <div><label>b</label><input type="number" id="bis-b" placeholder="2"></div>
+      </div>
+      <div><label>Tolerance</label><input type="number" id="bis-tol" value="0.0001" step="any"></div>
+      <button class="solver-btn" id="bis-solve">Find Root</button>
+      <div class="solver-result" id="bis-result">—</div>
+    </div>`;
+}
 function newtonPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
 function interpPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
 function integralPanel()  { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
 function derivPanel()     { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
-function wireDrawerForms() {}
+
+function bisection(fStr, a, b, tol) {
+  const f = x => math.evaluate(fStr, { x });
+  let fa = f(a), fb = f(b);
+  if (fa * fb > 0) return { error: 'f(a) and f(b) must have opposite signs.' };
+  const rows = [];
+  let iter = 0;
+  while ((b - a) / 2 > tol && iter < 100) {
+    iter++;
+    const c = (a + b) / 2;
+    const fc = f(c);
+    rows.push({ iter, a: a.toFixed(6), b: b.toFixed(6), c: c.toFixed(6), fc: fc.toFixed(6) });
+    if (Math.abs(fc) < 1e-12) { a = b = c; break; }
+    if (fa * fc < 0) { b = c; fb = fc; }
+    else             { a = c; fa = fc; }
+  }
+  return { root: ((a + b) / 2).toFixed(8), iterations: iter, rows };
+}
+
+function wireDrawerForms() {
+  // Bisection
+  document.getElementById('bis-solve')?.addEventListener('click', () => {
+    const fx  = document.getElementById('bis-fx').value.trim();
+    const a   = parseFloat(document.getElementById('bis-a').value);
+    const b   = parseFloat(document.getElementById('bis-b').value);
+    const tol = parseFloat(document.getElementById('bis-tol').value);
+    const out = document.getElementById('bis-result');
+    if (!fx || isNaN(a) || isNaN(b) || isNaN(tol)) { out.textContent = 'Fill all fields.'; return; }
+    try {
+      const res = bisection(fx, a, b, tol);
+      if (res.error) { out.textContent = res.error; return; }
+      const table = res.rows.slice(-5).map(r =>
+        `#${r.iter}  a=${r.a}  b=${r.b}  c=${r.c}  f(c)=${r.fc}`
+      ).join('\n');
+      out.textContent = `Root ≈ ${res.root}\nIterations: ${res.iterations}\n\nLast 5 steps:\n${table}`;
+    } catch(e) { out.textContent = 'Error: ' + e.message; }
+  });
+}
 
 // closeChatSheet stub — replaced in Task 11
 function closeChatSheet() {}
