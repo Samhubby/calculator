@@ -590,8 +590,35 @@ function runCalcTests() {
   console.log('Calculator tests done');
 }
 
+function runSolverTests() {
+  const assert = (label, got, want) => {
+    if (Math.abs(parseFloat(got) - want) > 1e-4)
+      console.error('FAIL ' + label + ': got ' + got + ', want ~' + want);
+    else console.log('PASS ' + label);
+  };
+  const r1 = bisection('x^3 - x - 2', 1, 2, 0.0001);
+  assert('bisection x^3-x-2', r1.root, 1.5214);
+  const r2 = bisection('x^2 - 4', 0, 3, 0.0001);
+  assert('bisection x^2-4', r2.root, 2.0);
+  const r3 = newtonRaphson('x^3 - x - 2', '3*x^2 - 1', 1.5, 0.0001);
+  assert('newton x^3-x-2', r3.root, 1.5214);
+  const r4 = secant('x^3 - x - 2', 1, 2, 0.0001);
+  assert('secant x^3-x-2', r4.root, 1.5214);
+  const pts = [[1,1],[2,8],[3,27]];
+  const ri = newtonInterpolation(pts, 2.5);
+  assert('interp cubic at 2.5', ri.value, 15.625);
+  const trap = trapezoidalRule('x^2', 0, 1, 100);
+  assert('trapezoidal x^2 0-1', trap.toFixed(4), 0.3333);
+  const simp = simpsonsRule('x^2', 0, 1, 100);
+  assert('simpsons x^2 0-1', simp.toFixed(4), 0.3333);
+  const nd = numericalDerivative('x^3', 2);
+  assert('numerical deriv x^3 at 2', nd.toFixed(4), 12.0000);
+  console.log('Solver tests done');
+}
+
 if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
   runCalcTests();
+  runSolverTests();
 }
 
 updateDisplay();
