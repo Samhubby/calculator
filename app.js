@@ -214,10 +214,52 @@ function bisectionPanel() {
       <div class="solver-result" id="bis-result">—</div>
     </div>`;
 }
-function newtonPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function newtonPanel() {
+  return `
+    <div class="solver-form">
+      <div><label>f(x)</label><input type="text" id="nr-fx" placeholder="x^3 - x - 2"></div>
+      <div><label>f'(x) — leave blank for Secant method</label><input type="text" id="nr-dfx" placeholder="3*x^2 - 1"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label>x₀</label><input type="number" id="nr-x0" placeholder="1.5" step="any"></div>
+        <div><label>x₁ (Secant only)</label><input type="number" id="nr-x1" placeholder="2" step="any"></div>
+      </div>
+      <div><label>Tolerance</label><input type="number" id="nr-tol" value="0.0001" step="any"></div>
+      <button class="solver-btn" id="nr-solve">Find Root</button>
+      <div class="solver-result" id="nr-result">—</div>
+    </div>`;
+}
 function interpPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
 function integralPanel()  { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
 function derivPanel()     { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+
+function newtonRaphson(fStr, dfStr, x0, tol) {
+  const f  = x => math.evaluate(fStr,  { x });
+  const df = x => math.evaluate(dfStr, { x });
+  let x = x0, rows = [];
+  for (let i = 0; i < 50; i++) {
+    const fx = f(x), dfx = df(x);
+    if (Math.abs(dfx) < 1e-14) return { error: "f'(x) ≈ 0 — method fails at this point." };
+    const xNew = x - fx / dfx;
+    rows.push({ iter: i+1, x: x.toFixed(8), fx: fx.toFixed(6), dfx: dfx.toFixed(6), xNew: xNew.toFixed(8) });
+    if (Math.abs(xNew - x) < tol) return { root: xNew.toFixed(8), iterations: i+1, method: 'Newton-Raphson', rows };
+    x = xNew;
+  }
+  return { error: 'Did not converge in 50 iterations.' };
+}
+
+function secant(fStr, x0, x1, tol) {
+  const f = x => math.evaluate(fStr, { x });
+  let rows = [];
+  for (let i = 0; i < 50; i++) {
+    const f0 = f(x0), f1 = f(x1);
+    if (Math.abs(f1 - f0) < 1e-14) return { error: 'f(x1) - f(x0) ≈ 0 — method fails.' };
+    const x2 = x1 - f1 * (x1 - x0) / (f1 - f0);
+    rows.push({ iter: i+1, x0: x0.toFixed(6), x1: x1.toFixed(6), x2: x2.toFixed(8) });
+    if (Math.abs(x2 - x1) < tol) return { root: x2.toFixed(8), iterations: i+1, method: 'Secant', rows };
+    x0 = x1; x1 = x2;
+  }
+  return { error: 'Did not converge in 50 iterations.' };
+}
 
 function bisection(fStr, a, b, tol) {
   const f = x => math.evaluate(fStr, { x });
@@ -253,6 +295,31 @@ function wireDrawerForms() {
         `#${r.iter}  a=${r.a}  b=${r.b}  c=${r.c}  f(c)=${r.fc}`
       ).join('\n');
       out.textContent = `Root ≈ ${res.root}\nIterations: ${res.iterations}\n\nLast 5 steps:\n${table}`;
+    } catch(e) { out.textContent = 'Error: ' + e.message; }
+  });
+
+  // Newton/Secant
+  document.getElementById('nr-solve')?.addEventListener('click', () => {
+    const fx   = document.getElementById('nr-fx').value.trim();
+    const dfx  = document.getElementById('nr-dfx').value.trim();
+    const x0   = parseFloat(document.getElementById('nr-x0').value);
+    const x1   = parseFloat(document.getElementById('nr-x1').value);
+    const tol  = parseFloat(document.getElementById('nr-tol').value);
+    const out  = document.getElementById('nr-result');
+    if (!fx || isNaN(x0)) { out.textContent = 'Fill f(x) and x₀.'; return; }
+    try {
+      let res;
+      if (dfx) {
+        res = newtonRaphson(fx, dfx, x0, tol);
+      } else {
+        if (isNaN(x1)) { out.textContent = 'Enter x₁ for Secant method.'; return; }
+        res = secant(fx, x0, x1, tol);
+      }
+      if (res.error) { out.textContent = res.error; return; }
+      const table = res.rows.slice(-5).map(r =>
+        `#${r.iter}  ${Object.values(r).slice(1).join('  ')}`
+      ).join('\n');
+      out.textContent = `Method: ${res.method}\nRoot ≈ ${res.root}\nIterations: ${res.iterations}\n\nLast 5 steps:\n${table}`;
     } catch(e) { out.textContent = 'Error: ' + e.message; }
   });
 }
