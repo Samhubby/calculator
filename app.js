@@ -240,8 +240,37 @@ function interpPanel() {
       <div class="solver-result" id="interp-result">—</div>
     </div>`;
 }
-function integralPanel()  { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function integralPanel() {
+  return `
+    <div class="solver-form">
+      <div><label>f(x)</label><input type="text" id="int-fx" placeholder="x^2"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label>a</label><input type="number" id="int-a" placeholder="0" step="any"></div>
+        <div><label>b</label><input type="number" id="int-b" placeholder="1" step="any"></div>
+      </div>
+      <div><label>n (subintervals — even for Simpson)</label><input type="number" id="int-n" value="10" min="2"></div>
+      <button class="solver-btn" id="int-solve">Integrate</button>
+      <div class="solver-result" id="int-result">—</div>
+    </div>`;
+}
 function derivPanel()     { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+
+function trapezoidalRule(fStr, a, b, n) {
+  const f = x => math.evaluate(fStr, { x });
+  const h = (b - a) / n;
+  let sum = f(a) + f(b);
+  for (let i = 1; i < n; i++) sum += 2 * f(a + i * h);
+  return (h / 2) * sum;
+}
+
+function simpsonsRule(fStr, a, b, n) {
+  if (n % 2 !== 0) n++;
+  const f = x => math.evaluate(fStr, { x });
+  const h = (b - a) / n;
+  let sum = f(a) + f(b);
+  for (let i = 1; i < n; i++) sum += (i % 2 === 0 ? 2 : 4) * f(a + i * h);
+  return (h / 3) * sum;
+}
 
 function newtonInterpolation(points, queryX) {
   const n = points.length;
@@ -373,6 +402,21 @@ function wireDrawerForms() {
       });
       const res = newtonInterpolation(points, qx);
       out.textContent = `f(${qx}) ≈ ${res.value.toFixed(6)}\n\nDivided differences:\n${res.steps.join('\n')}`;
+    } catch(e) { out.textContent = 'Error: ' + e.message; }
+  });
+
+  // Integration
+  document.getElementById('int-solve')?.addEventListener('click', () => {
+    const fx = document.getElementById('int-fx').value.trim();
+    const a  = parseFloat(document.getElementById('int-a').value);
+    const b  = parseFloat(document.getElementById('int-b').value);
+    const n  = parseInt(document.getElementById('int-n').value);
+    const out = document.getElementById('int-result');
+    if (!fx || isNaN(a) || isNaN(b) || isNaN(n)) { out.textContent = 'Fill all fields.'; return; }
+    try {
+      const trap = trapezoidalRule(fx, a, b, n);
+      const simp = simpsonsRule(fx, a, b, n % 2 === 0 ? n : n + 1);
+      out.textContent = `Trapezoidal (n=${n}):\n  ∫f dx ≈ ${trap.toFixed(8)}\n\nSimpson's (n=${n % 2 === 0 ? n : n+1}):\n  ∫f dx ≈ ${simp.toFixed(8)}`;
     } catch(e) { out.textContent = 'Error: ' + e.message; }
   });
 }
