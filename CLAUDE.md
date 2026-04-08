@@ -70,6 +70,39 @@ git add . && git commit -m "update" && git push
 # GitHub Pages auto-deploys from master branch root
 ```
 
+## Implementation Plan
+
+Full plan: [docs/superpowers/plans/2026-04-08-engineering-calculator-pwa.md](docs/superpowers/plans/2026-04-08-engineering-calculator-pwa.md)
+
+Execution: Subagent-driven development (14 tasks → Playwright E2E testing)
+
+## Testing
+
+### Unit / Console Tests
+- Calculator engine: `runCalcTests()` — runs in DevTools console on localhost
+- Numerical solvers: `runSolverTests()` — runs in DevTools console on localhost
+- Both wrapped in `if (localhost)` guard — do not run in production
+
+### Playwright E2E Tests (run after all 14 tasks complete)
+- File: `tests/e2e.spec.js`
+- Runner: Playwright (installed as dev dependency or via npx)
+- Covers:
+  - Basic calculator operations
+  - Landscape scientific mode
+  - Bisection, Newton-Raphson, Interpolation, Integration, Derivative solvers
+  - Long-press 0 → chat sheet opens
+  - Swipe/close chat sheet
+  - API key settings modal (first launch)
+  - PWA installability (manifest + SW registered)
+
+```bash
+# Run Playwright tests
+npx playwright test
+
+# Run with UI
+npx playwright test --ui
+```
+
 ## Design Spec
 
 Full design document: [docs/superpowers/specs/2026-04-08-engineering-calculator-pwa-design.md](docs/superpowers/specs/2026-04-08-engineering-calculator-pwa-design.md)
@@ -81,3 +114,5 @@ Full design document: [docs/superpowers/specs/2026-04-08-engineering-calculator-
 | 2026-04-08 | Project initialized, design spec written |
 | 2026-04-08 | Added derivative calculator tab to numerical methods drawer |
 | 2026-04-08 | Repository created on GitHub, GitHub Pages enabled |
+| 2026-04-08 | Implementation plan created (14 tasks, subagent-driven) |
+| 2026-04-08 | Playwright E2E testing planned for post-implementation |
