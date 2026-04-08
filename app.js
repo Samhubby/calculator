@@ -537,6 +537,41 @@ function appendMsg(role, text, extraClass = '') {
 document.getElementById('chat-send').addEventListener('click', sendChat);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
 
+// ===== SETTINGS =====
+const settingsModal = document.getElementById('settings-modal');
+const apiKeyInput   = document.getElementById('api-key-input');
+
+function showSettingsModal() {
+  apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+  settingsModal.classList.remove('hidden');
+  setTimeout(() => apiKeyInput.focus(), 100);
+}
+
+function hideSettingsModal() {
+  settingsModal.classList.add('hidden');
+}
+
+document.getElementById('settings-save').addEventListener('click', () => {
+  const key = apiKeyInput.value.trim();
+  if (key) {
+    localStorage.setItem('gemini_api_key', key);
+    hideSettingsModal();
+  } else {
+    apiKeyInput.style.borderColor = 'red';
+    setTimeout(() => apiKeyInput.style.borderColor = '', 1500);
+  }
+});
+
+document.getElementById('settings-cancel').addEventListener('click', hideSettingsModal);
+document.getElementById('btn-settings').addEventListener('click', showSettingsModal);
+
+// First-launch: show settings if no API key
+window.addEventListener('load', () => {
+  if (!localStorage.getItem('gemini_api_key')) {
+    setTimeout(showSettingsModal, 800);
+  }
+});
+
 // ===== CONSOLE TESTS (localhost only) =====
 function runCalcTests() {
   const c = new Calculator();
