@@ -154,7 +154,58 @@ function handleSci(fn) {
   updateDisplay();
 }
 
-// Drawer/chat stubs — filled in Tasks 5 and 11
+// ===== DRAWER =====
+const drawer = document.getElementById('drawer');
+const drawerContent = document.getElementById('drawer-content');
+const backdrop = document.getElementById('backdrop');
+
+function openDrawer() {
+  renderDrawerTabs();
+  drawer.classList.remove('hidden');
+  backdrop.classList.remove('hidden');
+}
+
+function closeDrawer() {
+  drawer.classList.add('hidden');
+  backdrop.classList.add('hidden');
+}
+
+function renderDrawerTabs() {
+  if (drawerContent.children.length > 0) return;
+  drawerContent.innerHTML = `
+    <div class="tab-panel active" id="tab-bisection">${bisectionPanel()}</div>
+    <div class="tab-panel" id="tab-newton">${newtonPanel()}</div>
+    <div class="tab-panel" id="tab-interp">${interpPanel()}</div>
+    <div class="tab-panel" id="tab-integral">${integralPanel()}</div>
+    <div class="tab-panel" id="tab-deriv">${derivPanel()}</div>
+  `;
+  wireDrawerForms();
+}
+
+document.getElementById('btn-drawer').addEventListener('click', openDrawer);
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+if (typeof closeChatSheet === 'undefined') window.closeChatSheet = () => {};
+backdrop.addEventListener('click', () => { closeDrawer(); closeChatSheet(); });
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = document.getElementById('tab-' + btn.dataset.tab);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+// Panel HTML stubs — filled in Tasks 6-10
+function bisectionPanel() { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function newtonPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function interpPanel()    { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function integralPanel()  { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function derivPanel()     { return '<p style="color:#888;font-size:13px">Loading...</p>'; }
+function wireDrawerForms() {}
+
+// closeChatSheet stub — replaced in Task 11
 function closeChatSheet() {}
 
 // ===== CONSOLE TESTS (localhost only) =====
