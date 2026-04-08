@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Calculator">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Display -->
+    <div id="display-wrap">
+      <div id="display">0</div>
+    </div>
+
+    <!-- Basic buttons (portrait) -->
+    <div id="basic-grid">
+      <button class="btn btn-fn" data-action="clear">AC</button>
+      <button class="btn btn-fn" data-action="sign">+/−</button>
+      <button class="btn btn-fn" data-action="percent">%</button>
+      <button class="btn btn-op" data-action="op" data-op="/">÷</button>
+
+      <button class="btn btn-num" data-action="num" data-val="7">7</button>
+      <button class="btn btn-num" data-action="num" data-val="8">8</button>
+      <button class="btn btn-num" data-action="num" data-val="9">9</button>
+      <button class="btn btn-op" data-action="op" data-op="*">×</button>
+
+      <button class="btn btn-num" data-action="num" data-val="4">4</button>
+      <button class="btn btn-num" data-action="num" data-val="5">5</button>
+      <button class="btn btn-num" data-action="num" data-val="6">6</button>
+      <button class="btn btn-op" data-action="op" data-op="-">−</button>
+
+      <button class="btn btn-num" data-action="num" data-val="1">1</button>
+      <button class="btn btn-num" data-action="num" data-val="2">2</button>
+      <button class="btn btn-num" data-action="num" data-val="3">3</button>
+      <button class="btn btn-op" data-action="op" data-op="+">+</button>
+
+      <button class="btn btn-num btn-zero" id="btn-zero" data-action="num" data-val="0">0</button>
+      <button class="btn btn-num" data-action="decimal">.</button>
+      <button class="btn btn-op" data-action="equals">=</button>
+    </div>
+
+    <!-- Scientific panel (landscape only) -->
+    <div id="sci-panel">
+      <button class="btn btn-sci" data-action="sci" data-fn="sin">sin</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="cos">cos</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="tan">tan</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="asin">sin⁻¹</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="acos">cos⁻¹</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="atan">tan⁻¹</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="log">log</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="ln">ln</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="sqrt">√</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="sq">x²</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="pow">xʸ</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="pi">π</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="e">e</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="open">(</button>
+      <button class="btn btn-sci" data-action="sci" data-fn="close">)</button>
+    </div>
+
+    <!-- Landscape toolbar -->
+    <div id="landscape-toolbar">
+      <button id="btn-settings" title="Settings">⚙</button>
+      <button id="btn-drawer" title="Numerical Methods">≡</button>
+    </div>
+
+    <!-- Numerical Methods Drawer -->
+    <div id="drawer" class="sheet hidden">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div id="drawer-tabs">
+          <button class="tab-btn active" data-tab="bisection">Bisection</button>
+          <button class="tab-btn" data-tab="newton">NR/Secant</button>
+          <button class="tab-btn" data-tab="interp">Interp</button>
+          <button class="tab-btn" data-tab="integral">∫</button>
+          <button class="tab-btn" data-tab="deriv">d/dx</button>
+        </div>
+        <button class="sheet-close" id="drawer-close">×</button>
+      </div>
+      <div id="drawer-content">
+        <!-- Tab panels injected by JS -->
+      </div>
+    </div>
+
+    <!-- LLM Chat Overlay -->
+    <div id="chat-sheet" class="sheet hidden">
+      <div class="sheet-handle" id="chat-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">AI Assistant</span>
+        <button class="sheet-close" id="chat-close">×</button>
+      </div>
+      <div id="chat-history"></div>
+      <div id="chat-input-row">
+        <input type="text" id="chat-input" placeholder="Ask a question..." autocomplete="off">
+        <button id="chat-send">↑</button>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-box">
+        <h3>Gemini API Key</h3>
+        <input type="password" id="api-key-input" placeholder="Paste your API key">
+        <div class="modal-btns">
+          <button id="settings-cancel">Cancel</button>
+          <button id="settings-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop -->
+    <div id="backdrop" class="hidden"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@13/lib/browser/math.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
