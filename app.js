@@ -519,8 +519,7 @@ async function sendChat() {
   const thinking = appendMsg('ai', '...', 'thinking');
   try {
     const body = {
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: 'user', parts: [{ text: msg }] }]
+      contents: [{ role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\n' + msg }] }]
     };
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
