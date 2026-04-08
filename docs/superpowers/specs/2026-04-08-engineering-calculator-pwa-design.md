@@ -71,6 +71,7 @@ Accessed via `≡` in landscape mode. Bottom sheet with tabs:
 | **Newton-Raphson / Secant** | Input: f(x), optional f'(x), x₀ (and x₁ for Secant), tolerance. Auto-switches to Secant if f'(x) is left blank. Output: root + convergence steps |
 | **Interpolation** | Input: x/y data points. Output: Newton's divided difference polynomial + value at query point |
 | **Integration** | Input: f(x), [a,b], n. Output: Trapezoidal / Simpson's rule result |
+| **Derivative** | Input: f(x) as text, point x. Output: numerical derivative (central difference method) + symbolic derivative via math.js derivative parser |
 
 All solvers use `math.js` to parse and evaluate user-entered function strings safely.
 
@@ -120,6 +121,7 @@ All solvers use `math.js` to parse and evaluate user-entered function strings sa
 | Newton's method for systems | LLM chat |
 | Polynomial interpolation (Newton/Lagrange) | Numerical drawer + LLM chat |
 | Numerical integration (Trapezoidal/Simpson) | Numerical drawer + LLM chat |
+| Derivatives (numerical + symbolic) | Numerical drawer (Derivative tab) + LLM chat |
 
 ---
 
