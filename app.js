@@ -464,7 +464,7 @@ function wireDrawerForms() {
 const chatSheet   = document.getElementById('chat-sheet');
 const chatInput   = document.getElementById('chat-input');
 const chatHistory = document.getElementById('chat-history');
-const SYSTEM_PROMPT = 'You are a numerical methods assistant. Give concise, step-by-step solutions suitable for an engineering exam. Use plain text, no markdown.';
+const SYSTEM_PROMPT = 'You are a numerical methods assistant. Give concise, step-by-step solutions for engineering exams. Use markdown formatting: **bold** for key results, `inline code` for variables and expressions like `f(x) = x^3 - 2`, and fenced code blocks for iteration tables and multi-line equations.';
 
 function openChatSheet() {
   chatSheet.classList.remove('hidden');
@@ -546,7 +546,11 @@ async function sendChat() {
 function appendMsg(role, text, extraClass = '') {
   const el = document.createElement('div');
   el.className = 'chat-msg ' + role + (extraClass ? ' ' + extraClass : '');
-  el.textContent = text;
+  if (role === 'ai' && !extraClass && typeof marked !== 'undefined') {
+    el.innerHTML = marked.parse(text);
+  } else {
+    el.textContent = text;
+  }
   chatHistory.appendChild(el);
   chatHistory.scrollTop = chatHistory.scrollHeight;
   return el;
