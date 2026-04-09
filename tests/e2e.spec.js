@@ -238,7 +238,7 @@ test('saving an API key dismisses modal', async ({ page }) => {
 test('API key persists in localStorage', async ({ page }) => {
   await page.fill('#api-key-input', 'my-test-key');
   await page.click('#settings-save');
-  const stored = await page.evaluate(() => localStorage.getItem('gemini_api_key'));
+  const stored = await page.evaluate(() => localStorage.getItem('ai_api_key'));
   expect(stored).toBe('my-test-key');
 });
 

@@ -510,37 +510,66 @@ zeroBtn.addEventListener('click', () => {
 
 // Send message
 async function sendChat() {
-  const apiKey = localStorage.getItem('gemini_api_key');
-  if (!apiKey) { if (typeof showSettingsModal === 'function') showSettingsModal(); return; }
+  const apiKey = localStorage.getItem('ai_api_key');
+  if (!apiKey) { showSettingsModal(); return; }
   const msg = chatInput.value.trim();
   if (!msg) return;
   chatInput.value = '';
   appendMsg('user', msg);
   const thinking = appendMsg('ai', '...', 'thinking');
   try {
-    const body = {
-      contents: [{ role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\n' + msg }] }]
-    };
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      thinking.remove();
-      appendMsg('ai', 'API error: ' + (data?.error?.message || `HTTP ${res.status}`));
-      return;
+    const isOpenRouter = apiKey.startsWith('sk-or-');
+    let reply;
+    if (isOpenRouter) {
+      reply = await callOpenRouter(apiKey, msg);
+    } else {
+      reply = await callGemini(apiKey, msg);
     }
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-      || (data?.promptFeedback?.blockReason ? 'Blocked: ' + data.promptFeedback.blockReason : null)
-      || data?.error?.message
-      || 'No response.';
     thinking.remove();
     appendMsg('ai', reply);
   } catch(e) {
     thinking.remove();
     appendMsg('ai', 'Network error: ' + e.message);
   }
+}
+
+async function callGemini(apiKey, msg) {
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\n' + msg }] }]
+  };
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  );
+  const data = await res.json();
+  if (!res.ok) return 'API error: ' + (data?.error?.message || `HTTP ${res.status}`);
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text
+    || (data?.promptFeedback?.blockReason ? 'Blocked: ' + data.promptFeedback.blockReason : null)
+    || 'No response.';
+}
+
+async function callOpenRouter(apiKey, msg) {
+  const model = localStorage.getItem('ai_model') || 'meta-llama/llama-3.3-8b-instruct:free';
+  const body = {
+    model,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: msg }
+    ]
+  };
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': 'https://samhubby.github.io/calculator',
+      'X-Title': 'Engineering Calculator'
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) return 'API error: ' + (data?.error?.message || `HTTP ${res.status}`);
+  return data?.choices?.[0]?.message?.content || 'No response.';
 }
 
 function appendMsg(role, text, extraClass = '') {
@@ -562,9 +591,11 @@ chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKe
 // ===== SETTINGS =====
 const settingsModal = document.getElementById('settings-modal');
 const apiKeyInput   = document.getElementById('api-key-input');
+const modelInput    = document.getElementById('model-input');
 
 function showSettingsModal() {
-  apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+  apiKeyInput.value = localStorage.getItem('ai_api_key') || '';
+  modelInput.value  = localStorage.getItem('ai_model') || '';
   settingsModal.classList.remove('hidden');
   setTimeout(() => apiKeyInput.focus(), 100);
 }
@@ -574,9 +605,12 @@ function hideSettingsModal() {
 }
 
 document.getElementById('settings-save').addEventListener('click', () => {
-  const key = apiKeyInput.value.trim();
+  const key   = apiKeyInput.value.trim();
+  const model = modelInput.value.trim();
   if (key) {
-    localStorage.setItem('gemini_api_key', key);
+    localStorage.setItem('ai_api_key', key);
+    if (model) localStorage.setItem('ai_model', model);
+    else localStorage.removeItem('ai_model');
     hideSettingsModal();
   } else {
     apiKeyInput.style.borderColor = 'red';
@@ -587,9 +621,13 @@ document.getElementById('settings-save').addEventListener('click', () => {
 document.getElementById('settings-cancel').addEventListener('click', hideSettingsModal);
 document.getElementById('btn-settings').addEventListener('click', showSettingsModal);
 
-// First-launch: show settings if no API key
+// Migrate old gemini key if present
 window.addEventListener('load', () => {
-  if (!localStorage.getItem('gemini_api_key')) {
+  const oldKey = localStorage.getItem('gemini_api_key');
+  if (oldKey && !localStorage.getItem('ai_api_key')) {
+    localStorage.setItem('ai_api_key', oldKey);
+  }
+  if (!localStorage.getItem('ai_api_key')) {
     setTimeout(showSettingsModal, 800);
   }
 });
