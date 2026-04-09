@@ -549,7 +549,7 @@ async function callGemini(apiKey, msg) {
 }
 
 async function callOpenRouter(apiKey, msg) {
-  const model = localStorage.getItem('ai_model') || 'meta-llama/llama-3.3-8b-instruct:free';
+  const model = localStorage.getItem('ai_model') || 'nvidia/nemotron-3-super-120b-a12b:free';
   const body = {
     model,
     messages: [
